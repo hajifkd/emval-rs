@@ -1,6 +1,8 @@
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-    }
-}
+extern crate emval_sys;
+
+mod jsobj;
+
+use emval_sys::*;
+use jsobj::*;
+
+
