@@ -12,12 +12,24 @@ use std::sync::{Once, ONCE_INIT};
 use js_serializable::*;
 
 #[derive(Debug)]
+pub struct Args {
+    types: Vec<TYPEID>,
+    values: Vec<EM_GENERIC_WIRE_TYPE>,
+}
+
+impl Args {
+    pub fn new(types: Vec<TYPEID>, values: Vec<EM_GENERIC_WIRE_TYPE>) -> Args {
+        Args { types: types, values: values}
+    }
+}
+
+#[derive(Debug)]
 pub struct JSObj {
     val: EM_VAL,
 }
 
 impl JSSerializable for JSObj {
-    fn id() -> *const c_void {
+    fn id(&self) -> *const c_void {
         static REGISTER: Once = ONCE_INIT;
 
         REGISTER.call_once(|| {
@@ -46,5 +58,12 @@ impl JSObj {
         };
         
         JSObj { val: v }
+    }
+
+    pub fn call(&self, args: Args) {
+        unsafe {
+            _emval_call(self.val, args.types.len() as _, args.types.as_ptr(),
+                        args.values.as_ptr() as _);
+        }
     }
 }

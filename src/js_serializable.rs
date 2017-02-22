@@ -18,7 +18,7 @@ pub static INT_ID: &'static str = "integer\0";
 pub static DOUBLE_ID: &'static str = "double\0";
 
 pub trait JSSerializable {
-    fn id() -> *const c_void;
+    fn id(&self) -> *const c_void;
     fn serialize(&self) -> EM_GENERIC_WIRE_TYPE;
 }
 
@@ -31,8 +31,8 @@ pub fn to_wire_type(data: usize) -> EM_GENERIC_WIRE_TYPE {
     result
 }
 
-impl JSSerializable for String {
-    fn id() -> *const c_void {
+impl JSSerializable for str {
+    fn id(&self) -> *const c_void {
         static REGISTER: Once = ONCE_INIT;
 
         REGISTER.call_once(|| {
@@ -49,13 +49,15 @@ impl JSSerializable for String {
     }
 
     fn serialize(&self) -> EM_GENERIC_WIRE_TYPE {
-        let len = self.len();
-        let str_byte = size_of::<char>() * len;
+        let chars: Vec<char> = self.chars().collect();
+        let len = chars.len();
+        let bytes_len = len * size_of::<char>();
+        println!("{}", len);
         unsafe {
-            let s: *mut c_void = transmute(malloc(size_of::<usize>() + str_byte));
-            ptr::write(transmute(s), len); 
-            let c = transmute(transmute::<_, usize>(s) + size_of::<usize>());
-            ptr::copy(self.as_ptr(), c, str_byte);
+            let s: *mut usize = malloc(size_of::<usize>() + bytes_len) as _;
+            ptr::write(s, len); 
+            let c = s.offset(1) as *mut u8;
+            ptr::copy(chars.as_ptr() as _, c, bytes_len);
 
             to_wire_type(transmute(s))
         }
@@ -63,7 +65,7 @@ impl JSSerializable for String {
 }
 
 impl JSSerializable for isize {
-    fn id() -> *const c_void {
+    fn id(&self) -> *const c_void {
         static REGISTER: Once = ONCE_INIT;
 
         REGISTER.call_once(|| {
@@ -89,7 +91,7 @@ impl JSSerializable for isize {
 }
 
 impl JSSerializable for f64 {
-    fn id() -> *const c_void {
+    fn id(&self) -> *const c_void {
         static REGISTER: Once = ONCE_INIT;
 
         REGISTER.call_once(|| {
