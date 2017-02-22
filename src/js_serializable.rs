@@ -52,7 +52,6 @@ impl JSSerializable for str {
         let chars: Vec<char> = self.chars().collect();
         let len = chars.len();
         let bytes_len = len * size_of::<char>();
-        println!("{}", len);
         unsafe {
             let s: *mut usize = malloc(size_of::<usize>() + bytes_len) as _;
             ptr::write(s, len); 
