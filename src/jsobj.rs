@@ -4,18 +4,15 @@ extern crate libc;
 
 use emval_sys::*;
 
-use std;
 use std::ffi::CString;
-use std::mem::{transmute, size_of};
+use std::mem::transmute;
 use std::os::raw::c_void;
 use std::sync::{Once, ONCE_INIT};
-use std::ptr;
-
-use self::libc::malloc;
 
 use js_serializable::*;
 
-struct JSObj {
+#[derive(Debug)]
+pub struct JSObj {
     val: EM_VAL,
 }
 
@@ -39,5 +36,15 @@ impl JSSerializable for JSObj {
         unsafe {
             to_wire_type(transmute(self.val))
         }
+    }
+}
+
+impl JSObj {
+    pub fn global(name: &str) -> JSObj {
+        let v = unsafe {
+            _emval_get_global(CString::new(name).unwrap().as_ptr())
+        };
+        
+        JSObj { val: v }
     }
 }

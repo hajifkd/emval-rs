@@ -5,7 +5,6 @@ extern crate libc;
 use emval_sys::*;
 
 use std;
-use std::ffi::CString;
 use std::mem::{transmute, size_of};
 use std::os::raw::c_void;
 use std::sync::{Once, ONCE_INIT};
