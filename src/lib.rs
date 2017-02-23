@@ -1,5 +1,8 @@
 extern crate emval_sys;
 
+#[macro_use]
+extern crate lazy_static;
+
 pub mod js_serializable;
 pub mod jsobj;
 
