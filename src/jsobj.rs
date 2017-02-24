@@ -5,24 +5,14 @@ use emval_sys::*;
 
 use std::ffi::CString;
 use std::mem::transmute;
-use std::os::raw::c_void;
 use std::sync::{Once, ONCE_INIT};
 
 use js_serializable::*;
 
-lazy_static! {
-    static ref VOID_ID: &'static str = unsafe {
-        let name = "void\0";
-        _embind_register_void(name.as_ptr() as _,
-                              name.as_ptr() as _);
-        name
-    };
-}
-
 #[derive(Debug)]
 pub struct Args {
-    types: Vec<TYPEID>,
-    values: Vec<EM_GENERIC_WIRE_TYPE>,
+    pub types: Vec<TYPEID>,
+    pub values: Vec<EM_GENERIC_WIRE_TYPE>,
 }
 
 impl Args {
@@ -41,25 +31,30 @@ pub struct JSObj {
 }
 
 impl JSSerializable for JSObj {
-    fn id(&self) -> *const c_void {
+    type V = JSObj;
+
+    fn id() -> TYPEID {
         static REGISTER: Once = ONCE_INIT;
 
         REGISTER.call_once(|| {
             unsafe {
-                _embind_register_emval(transmute(OBJ_ID.as_ptr()),
-                                       transmute(OBJ_ID.as_ptr()));
+                _embind_register_emval(OBJ_ID.as_ptr() as _,
+                                       OBJ_ID.as_ptr() as _);
             }
         });
 
-        unsafe {
-            transmute(OBJ_ID.as_ptr())
-        }
+        OBJ_ID.as_ptr() as _
     }
 
     fn serialize(&self) -> EM_GENERIC_WIRE_TYPE {
         unsafe {
             to_wire_type(transmute(self.val))
         }
+    }
+
+    fn deserialize(val: EM_GENERIC_WIRE_TYPE) -> JSObj {
+        let val: *const EM_VAL = (&val as *const EM_GENERIC_WIRE_TYPE) as _;
+        unsafe { JSObj { val: *val} }
     }
 }
 
@@ -86,18 +81,8 @@ impl JSObj {
         }
     }
 
-    pub fn call_void_prop(&self, key: &str, args: Args) {
-        unsafe {
-            let mut types: Vec<TYPEID> = vec![transmute(0usize); args.len() + 1];
-            types[0] = VOID_ID.as_ptr() as _;
-            types[1..].clone_from_slice(&args.types);
-
-            let caller = _emval_get_method_caller(types.len() as _,
-                                                  types.as_ptr() as _);
-            _emval_call_void_method(caller, self.val,
-                                    CString::new(key).unwrap().as_ptr(),
-                                    args.values.as_ptr() as _);
-        }
+    pub fn call_prop<T: JSSerializable>(&self, method_name: &str, args: Args) -> T::V {
+        T::call_method(self.val, method_name, args)
     }
 }
 

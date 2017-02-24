@@ -17,7 +17,7 @@ macro_rules! args {
         let mut types = Vec::new();
         let mut values = Vec::new();
         $(
-            types.push($x.id());
+            types.push($x.instance_id());
             values.push($x.serialize());
         )*
 
