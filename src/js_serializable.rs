@@ -14,11 +14,11 @@ use self::libc::malloc;
 
 use jsobj::Args;
 
-pub static STR_ID: &'static str = "string\0";
-pub static OBJ_ID: &'static str = "object\0";
-pub static INT_ID: &'static str = "integer\0";
-pub static DOUBLE_ID: &'static str = "double\0";
-pub static VOID_ID: &'static str = "double\0";
+pub static STR_ID: &'static str = "rust_string\0";
+pub static OBJ_ID: &'static str = "rust_js_object\0";
+pub static INT_ID: &'static str = "rust_integer\0";
+pub static DOUBLE_ID: &'static str = "rust_double\0";
+pub static VOID_ID: &'static str = "rust_void\0";
 
 pub trait JSSerializable {
     type V;
@@ -41,7 +41,7 @@ pub trait JSSerializable {
             let mut types: Vec<TYPEID> = vec![transmute(0usize); args.len() + 1];
             types[0] = Self::id();
             types[1..].clone_from_slice(&args.types);
-            let caller = _emval_get_method_caller(args.len() as _,
+            let caller = _emval_get_method_caller(types.len() as _,
                                                   types.as_ptr() as _);
             let mut destructors = transmute(0usize);
             let result = _emval_call_method(caller, handle,
@@ -174,13 +174,11 @@ impl JSSerializable for isize {
     }
 
     fn serialize(&self) -> EM_GENERIC_WIRE_TYPE {
-        unsafe {
-            to_wire_type(transmute(*self))
-        }
+        to_wire_type(*self as _)
     }
 
     fn deserialize(val: EM_GENERIC_WIRE_TYPE) -> isize {
-        unsafe { transmute(to_ptr(val)) }
+        val as _
     }
 }
 

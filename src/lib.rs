@@ -11,6 +11,13 @@ pub use js_serializable::JSSerializable;
 
 #[macro_export]
 macro_rules! args {
+    () => {{
+        use emval;
+        let types = Vec::new();
+        let values = Vec::new();
+        emval::jsobj::Args::new(types, values)
+    }};
+
     ( $( $x:expr ),* ) => {{
         use emval;
 

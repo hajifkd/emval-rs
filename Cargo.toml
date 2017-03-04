@@ -7,3 +7,7 @@ authors = ["Hajime Fukuda <hajime.fukuda@me.com>"]
 emval-sys = { git = "https://github.com/hajifkd/emval-sys" }
 libc = "*"
 lazy_static = "*"
+
+[package.metadata.testjs]
+node = "nodejs"
+prelude = "tests/prelude.js"
