@@ -15,3 +15,8 @@ fn add() {
     assert_eq!(obj.call_prop::<isize>("add", args!(1isize, 0isize)), 1isize);
 }
 
+#[test]
+fn get_string() {
+    let obj = JSObj::global("obj");
+    assert_eq!(obj.call_prop::<String>("helloWorld", args!()), "Hello, world!");
+}

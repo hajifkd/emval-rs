@@ -7,7 +7,9 @@ use std::ffi::CString;
 use std::mem::transmute;
 use std::sync::{Once, ONCE_INIT};
 
+use jsid::*;
 use jsserialize::*;
+use jsdeserialize::*;
 
 #[derive(Debug)]
 pub struct Args {
@@ -30,9 +32,7 @@ pub struct JSObj {
     val: EM_VAL,
 }
 
-impl JSSerialize for JSObj {
-    type V = JSObj;
-
+impl JSID for JSObj {
     fn id() -> TYPEID {
         static REGISTER: Once = ONCE_INIT;
         static OBJ_ID: &'static str = "rust_jsobj";
@@ -46,13 +46,17 @@ impl JSSerialize for JSObj {
 
         OBJ_ID.as_ptr() as _
     }
+}
 
+impl JSSerialize for JSObj {
     fn serialize(&self) -> EM_GENERIC_WIRE_TYPE {
         unsafe {
             to_wire_type(transmute(self.val))
         }
     }
+}
 
+impl JSDeserialize for JSObj {
     fn deserialize(val: EM_GENERIC_WIRE_TYPE) -> JSObj {
         let val: *const EM_VAL = (&val as *const EM_GENERIC_WIRE_TYPE) as _;
         unsafe { JSObj { val: *val} }
@@ -82,7 +86,7 @@ impl JSObj {
         }
     }
 
-    pub fn call_prop<T: JSSerialize>(&self, method_name: &str, args: Args) -> T::V {
+    pub fn call_prop<T: JSDeserialize>(&self, method_name: &str, args: Args) -> T {
         T::call_method(self.val, method_name, args)
     }
 }

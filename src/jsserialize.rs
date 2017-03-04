@@ -4,49 +4,16 @@ extern crate libc;
 
 use emval_sys::*;
 
-use std;
-use std::ffi::CString;
 use std::mem::{transmute, size_of};
-use std::sync::{Once, ONCE_INIT};
 use std::ptr;
 
 use self::libc::malloc;
 
-use jsobj::Args;
+use jsid::*;
 
-pub trait JSSerialize {
-    type V;
-
-    fn id() -> TYPEID;
-
-    // For macro...
-    fn instance_id(&self) -> TYPEID {
-        Self::id()
-    }
-
+pub trait JSSerialize: JSID {
     fn serialize(&self) -> EM_GENERIC_WIRE_TYPE;
 
-    fn deserialize(v: EM_GENERIC_WIRE_TYPE) -> Self::V;
-
-    fn call_method(handle: EM_VAL,
-                   method_name: &str,
-                   args: Args) -> Self::V {
-        unsafe {
-            let mut types: Vec<TYPEID> = vec![transmute(0usize); args.len() + 1];
-            types[0] = Self::id();
-            types[1..].clone_from_slice(&args.types);
-            let caller = _emval_get_method_caller(types.len() as _,
-                                                  types.as_ptr() as _);
-            let mut destructors = transmute(0usize);
-            let result = _emval_call_method(caller, handle,
-                                            CString::new(method_name).unwrap().as_ptr(),
-                                            &mut destructors as _,
-                                            args.values.as_ptr() as _);
-            _emval_run_destructors(destructors);
-
-            Self::deserialize(result)
-        }
-    }
 }
 
 pub fn to_wire_type(data: usize) -> EM_GENERIC_WIRE_TYPE {
@@ -58,70 +25,13 @@ pub fn to_wire_type(data: usize) -> EM_GENERIC_WIRE_TYPE {
     result
 }
 
-pub fn to_ptr(data: EM_GENERIC_WIRE_TYPE) -> isize {
-    let ptr: *const isize = (&data as *const EM_GENERIC_WIRE_TYPE) as _;
-    unsafe { *ptr }
-}
-
 impl JSSerialize for () {
-    type V = ();
-
-    fn id() -> TYPEID {
-        static REGISTER: Once = ONCE_INIT;
-        static VOID_ID: &'static str = "rust_void";
-
-        REGISTER.call_once(|| {
-            unsafe {
-                _embind_register_void(VOID_ID.as_ptr() as _,
-                                      VOID_ID.as_ptr() as _);
-            }
-        });
-
-        VOID_ID.as_ptr() as _
-    }
-
     fn serialize(&self) -> EM_GENERIC_WIRE_TYPE {
         0f64
-    }
-
-    fn deserialize(_: EM_GENERIC_WIRE_TYPE) {
-    }
-
-    fn call_method(handle: EM_VAL,
-                   method_name: &str,
-                   args: Args) {
-        unsafe {
-            let mut types: Vec<TYPEID> = vec![transmute(0usize); args.len() + 1];
-            types[0] = ().instance_id();
-            types[1..].clone_from_slice(&args.types);
-
-            let caller = _emval_get_method_caller(types.len() as _,
-                                                  types.as_ptr() as _);
-            _emval_call_void_method(caller, handle,
-                                    CString::new(method_name).unwrap().as_ptr(),
-                                    args.values.as_ptr() as _);
-        }
     }
 }
 
 impl JSSerialize for str {
-    type V = String;
-
-    fn id() -> TYPEID {
-        static REGISTER: Once = ONCE_INIT;
-        static STR_ID: &'static str = "rust_string_utf32";
-
-        REGISTER.call_once(|| {
-            unsafe {
-                _embind_register_std_wstring(STR_ID.as_ptr() as _,
-                                             size_of::<char>(),
-                                             STR_ID.as_ptr() as _);
-            }
-        });
-
-        STR_ID.as_ptr() as _
-    }
-
     fn serialize(&self) -> EM_GENERIC_WIRE_TYPE {
         let chars: Vec<char> = self.chars().collect();
         let len = chars.len();
@@ -136,72 +46,16 @@ impl JSSerialize for str {
         }
     }
 
-    fn deserialize(ptr: EM_GENERIC_WIRE_TYPE) -> String {
-        let ptr: *mut usize = unsafe { transmute(to_ptr(ptr)) };
-        let len: usize = unsafe { *ptr };
-        let bytes_len = len * size_of::<char>();
-        let mut vec: Vec<u8> = Vec::with_capacity(bytes_len);
-
-        unsafe {
-            ptr::copy(ptr.offset(1) as _, vec.as_mut_ptr(), bytes_len);
-        }
-
-        String::from_utf8(vec).unwrap()
-    }
 }
 
 impl JSSerialize for isize {
-    type V = isize;
-
-    fn id() -> TYPEID {
-        static REGISTER: Once = ONCE_INIT;
-        static INT_ID: &'static str = "rust_integer";
-
-        REGISTER.call_once(|| {
-            unsafe {
-                _embind_register_integer(INT_ID.as_ptr() as _,
-                                         INT_ID.as_ptr() as _,
-                                         size_of::<isize>(),
-                                         std::isize::MIN as _,
-                                         std::isize::MAX as _);
-            }
-        });
-
-        INT_ID.as_ptr() as _
-    }
-
     fn serialize(&self) -> EM_GENERIC_WIRE_TYPE {
         to_wire_type(*self as _)
-    }
-
-    fn deserialize(val: EM_GENERIC_WIRE_TYPE) -> isize {
-        val as _
     }
 }
 
 impl JSSerialize for f64 {
-    type V = f64;
-
-    fn id() -> TYPEID {
-        static REGISTER: Once = ONCE_INIT;
-        static DOUBLE_ID: &'static str = "rust_double";
-
-        REGISTER.call_once(|| {
-            unsafe {
-                _embind_register_float(DOUBLE_ID.as_ptr() as _,
-                                       DOUBLE_ID.as_ptr() as _,
-                                       size_of::<f64>());
-            }
-        });
-
-        DOUBLE_ID.as_ptr() as _
-    }
-
     fn serialize(&self) -> EM_GENERIC_WIRE_TYPE {
         *self
-    }
-
-    fn deserialize(val: EM_GENERIC_WIRE_TYPE) -> f64 {
-        val
     }
 }
