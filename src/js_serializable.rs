@@ -14,12 +14,6 @@ use self::libc::malloc;
 
 use jsobj::Args;
 
-pub static STR_ID: &'static str = "rust_string\0";
-pub static OBJ_ID: &'static str = "rust_js_object\0";
-pub static INT_ID: &'static str = "rust_integer\0";
-pub static DOUBLE_ID: &'static str = "rust_double\0";
-pub static VOID_ID: &'static str = "rust_void\0";
-
 pub trait JSSerializable {
     type V;
 
@@ -74,6 +68,7 @@ impl JSSerializable for () {
 
     fn id() -> TYPEID {
         static REGISTER: Once = ONCE_INIT;
+        static VOID_ID: &'static str = "rust_void";
 
         REGISTER.call_once(|| {
             unsafe {
@@ -114,6 +109,7 @@ impl JSSerializable for str {
 
     fn id() -> TYPEID {
         static REGISTER: Once = ONCE_INIT;
+        static STR_ID: &'static str = "rust_string_utf32";
 
         REGISTER.call_once(|| {
             unsafe {
@@ -159,6 +155,7 @@ impl JSSerializable for isize {
 
     fn id() -> TYPEID {
         static REGISTER: Once = ONCE_INIT;
+        static INT_ID: &'static str = "rust_integer";
 
         REGISTER.call_once(|| {
             unsafe {
@@ -187,6 +184,7 @@ impl JSSerializable for f64 {
 
     fn id() -> TYPEID {
         static REGISTER: Once = ONCE_INIT;
+        static DOUBLE_ID: &'static str = "rust_double";
 
         REGISTER.call_once(|| {
             unsafe {

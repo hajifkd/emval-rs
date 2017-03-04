@@ -35,6 +35,7 @@ impl JSSerializable for JSObj {
 
     fn id() -> TYPEID {
         static REGISTER: Once = ONCE_INIT;
+        static OBJ_ID: &'static str = "rust_jsobj";
 
         REGISTER.call_once(|| {
             unsafe {
