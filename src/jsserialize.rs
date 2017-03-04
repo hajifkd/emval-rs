@@ -14,7 +14,7 @@ use self::libc::malloc;
 
 use jsobj::Args;
 
-pub trait JSSerializable {
+pub trait JSSerialize {
     type V;
 
     fn id() -> TYPEID;
@@ -63,7 +63,7 @@ pub fn to_ptr(data: EM_GENERIC_WIRE_TYPE) -> isize {
     unsafe { *ptr }
 }
 
-impl JSSerializable for () {
+impl JSSerialize for () {
     type V = ();
 
     fn id() -> TYPEID {
@@ -104,7 +104,7 @@ impl JSSerializable for () {
     }
 }
 
-impl JSSerializable for str {
+impl JSSerialize for str {
     type V = String;
 
     fn id() -> TYPEID {
@@ -150,7 +150,7 @@ impl JSSerializable for str {
     }
 }
 
-impl JSSerializable for isize {
+impl JSSerialize for isize {
     type V = isize;
 
     fn id() -> TYPEID {
@@ -179,7 +179,7 @@ impl JSSerializable for isize {
     }
 }
 
-impl JSSerializable for f64 {
+impl JSSerialize for f64 {
     type V = f64;
 
     fn id() -> TYPEID {

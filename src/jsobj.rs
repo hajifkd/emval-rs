@@ -7,7 +7,7 @@ use std::ffi::CString;
 use std::mem::transmute;
 use std::sync::{Once, ONCE_INIT};
 
-use js_serializable::*;
+use jsserialize::*;
 
 #[derive(Debug)]
 pub struct Args {
@@ -30,7 +30,7 @@ pub struct JSObj {
     val: EM_VAL,
 }
 
-impl JSSerializable for JSObj {
+impl JSSerialize for JSObj {
     type V = JSObj;
 
     fn id() -> TYPEID {
@@ -82,7 +82,7 @@ impl JSObj {
         }
     }
 
-    pub fn call_prop<T: JSSerializable>(&self, method_name: &str, args: Args) -> T::V {
+    pub fn call_prop<T: JSSerialize>(&self, method_name: &str, args: Args) -> T::V {
         T::call_method(self.val, method_name, args)
     }
 }
