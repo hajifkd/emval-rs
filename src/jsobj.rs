@@ -27,7 +27,7 @@ impl Args {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct JSObj {
     val: EM_VAL,
 }
@@ -59,11 +59,19 @@ impl JSSerialize for JSObj {
 impl JSDeserialize for JSObj {
     fn deserialize(val: EM_GENERIC_WIRE_TYPE) -> JSObj {
         let val: *const EM_VAL = (&val as *const EM_GENERIC_WIRE_TYPE) as _;
-        unsafe { JSObj { val: *val} }
+        unsafe { JSObj { val: *val } }
     }
 }
 
 impl JSObj {
+    pub fn undefined() -> JSObj {
+        JSObj { val: _EMVAL_UNDEFINED }
+    }
+
+    pub fn null() -> JSObj {
+        JSObj { val: _EMVAL_NULL }
+    }
+
     pub fn global(name: &str) -> JSObj {
         let v = unsafe {
             _emval_get_global(CString::new(name).unwrap().as_ptr())

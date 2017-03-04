@@ -48,14 +48,30 @@ impl JSSerialize for str {
 
 }
 
-impl JSSerialize for isize {
-    fn serialize(&self) -> EM_GENERIC_WIRE_TYPE {
-        to_wire_type(*self as _)
+macro_rules! serialize_rust_integer {
+    ( $( $t:ident )* ) => {
+        $(
+            impl JSSerialize for $t {
+                fn serialize(&self) -> EM_GENERIC_WIRE_TYPE {
+                    to_wire_type(*self as _)
+                }
+            }
+        )*
     }
 }
 
-impl JSSerialize for f64 {
-    fn serialize(&self) -> EM_GENERIC_WIRE_TYPE {
-        *self
+serialize_rust_integer!(isize i32 i16 i8 usize u32 u16 u8 bool);
+
+macro_rules! serialize_rust_real {
+    ( $( $t:ident )* ) => {
+        $(
+            impl JSSerialize for $t {
+                fn serialize(&self) -> EM_GENERIC_WIRE_TYPE {
+                    *self as _
+                }
+            }
+        )*
     }
 }
+
+serialize_rust_real!(f64 f32);

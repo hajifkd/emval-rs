@@ -4,7 +4,7 @@ use emval_sys::*;
 
 use std;
 use std::ffi::CString;
-use std::mem::{transmute, size_of};
+use std::mem::transmute;
 use std::ptr;
 
 use jsid::*;
@@ -21,6 +21,9 @@ pub trait JSDeserialize: JSID {
             let mut types: Vec<TYPEID> = vec![transmute(0usize); args.len() + 1];
             types[0] = Self::id();
             types[1..].clone_from_slice(&args.types);
+            // TODO How can we avoid secodary call?
+            // In cpp, the variable template is used and callers are fixed at the compile time.
+            // Maybe we could use hashmap at most...
             let caller = _emval_get_method_caller(types.len() as _,
                                                   types.as_ptr() as _);
             let mut destructors = transmute(0usize);
@@ -71,14 +74,22 @@ impl JSDeserialize for String {
     }
 }
 
-impl JSDeserialize for isize {
-    fn deserialize(val: EM_GENERIC_WIRE_TYPE) -> isize {
-        val as _
+impl JSDeserialize for bool {
+    fn deserialize(val: EM_GENERIC_WIRE_TYPE) -> bool {
+        val != 0f64
     }
 }
 
-impl JSDeserialize for f64 {
-    fn deserialize(val: EM_GENERIC_WIRE_TYPE) -> f64 {
-        val
+macro_rules! deserialize_rust_num {
+    ( $( $t:ident )* ) => {
+        $(
+            impl JSDeserialize for $t {
+                fn deserialize(val: EM_GENERIC_WIRE_TYPE) -> $t {
+                    val as _
+                }
+            }
+        )*
     }
 }
+
+deserialize_rust_num!(isize i32 i16 i8 usize u32 u16 u8 f64 f32);

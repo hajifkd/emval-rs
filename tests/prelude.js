@@ -9,6 +9,18 @@ var obj = {
     return this.one;
   },
 
+  returnTrue: function() {
+    return true;
+  },
+
+  returnFalse: function() {
+    return false;
+  },
+
+  returnNot: function(b) {
+    return !b;
+  },
+
   helloWorld: function() {
     return "Hello, world!";
   },
@@ -17,9 +29,11 @@ var obj = {
     return "こんにちは、世界!";
   },
 
+  helloSurrogatePair: function() {
+    return "🍺";
+  },
+
   add: function(x, y) {
-    console.log(x);
-    console.log(y);
     return x + y;
   }
 };
