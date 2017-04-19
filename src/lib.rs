@@ -7,6 +7,7 @@ pub mod jsid;
 pub mod jsserialize;
 pub mod jsdeserialize;
 pub mod jsobj;
+pub mod jsfunc;
 
 pub use jsobj::{Args, JSObj};
 pub use jsid::JSID;

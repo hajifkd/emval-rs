@@ -57,6 +57,10 @@ impl JSSerialize for JSObj {
 }
 
 impl JSDeserialize for JSObj {
+    fn from_jsobj_id(obj_id: EM_VAL) -> JSObj {
+        JSObj { val: obj_id }
+    }
+
     fn deserialize(val: EM_GENERIC_WIRE_TYPE) -> JSObj {
         let val: *const EM_VAL = (&val as *const EM_GENERIC_WIRE_TYPE) as _;
         unsafe { JSObj { val: *val } }

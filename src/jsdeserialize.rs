@@ -13,6 +13,18 @@ use jsobj::Args;
 pub trait JSDeserialize: JSID {
     fn deserialize(v: EM_GENERIC_WIRE_TYPE) -> Self;
 
+    fn from_jsobj_id(obj_id: EM_VAL) -> Self
+        where Self: std::marker::Sized {
+        unsafe {
+            let mut destructors = transmute(0usize);
+            let raw_v = _emval_as(obj_id, Self::id(), &mut destructors as _);
+            let result = Self::deserialize(raw_v);
+            _emval_run_destructors(destructors);
+
+            result
+        }
+    }
+
     fn call_method(handle: EM_VAL,
                    method_name: &str,
                    args: Args) -> Self 
@@ -23,7 +35,6 @@ pub trait JSDeserialize: JSID {
             types[1..].clone_from_slice(&args.types);
             // TODO How can we avoid secodary call?
             // In cpp, the variable template is used and callers are fixed at the compile time.
-            // Maybe we could use hashmap at most...
             let caller = _emval_get_method_caller(types.len() as _,
                                                   types.as_ptr() as _);
             let mut destructors = transmute(0usize);
