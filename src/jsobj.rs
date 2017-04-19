@@ -32,6 +32,14 @@ pub struct JSObj {
     val: EM_VAL,
 }
 
+impl Drop for JSObj {
+    fn drop(&mut self) {
+        unsafe {
+            _emval_decref(self.val);
+        }
+    }
+}
+
 impl JSID for JSObj {
     fn id() -> TYPEID {
         static REGISTER: Once = ONCE_INIT;
