@@ -1,8 +1,5 @@
 extern crate emval_sys;
 
-#[macro_use]
-extern crate lazy_static;
-
 pub mod jsid;
 pub mod jsserialize;
 pub mod jsdeserialize;
@@ -13,6 +10,7 @@ pub use jsobj::{Args, JSObj};
 pub use jsid::JSID;
 pub use jsserialize::JSSerialize;
 pub use jsdeserialize::JSDeserialize;
+pub use jsfunc::JSFunc;
 
 #[macro_export]
 macro_rules! args {

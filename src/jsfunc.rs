@@ -86,7 +86,8 @@ macro_rules! jsfunc_for {
 /*
  * putStrLn $ foldr ((++) . ("\n" ++)) "" $ map (("jsfunc_for!(" ++) . (++ ");")) $ map (\x -> (replicate x 'i') ++ foldr (++) "" [", a" ++ show y ++ " => A" ++ show y | y <- [1..x]]) [1..5]
  */
-jsfunc_for!(i, a1 => A1);
+jsfunc_for!(ii, a1 => A1);
+/*
 jsfunc_for!(ii, a1 => A1, a2 => A2);
 jsfunc_for!(iii, a1 => A1, a2 => A2, a3 => A3);
 jsfunc_for!(iiii, a1 => A1, a2 => A2, a3 => A3, a4 => A4);
@@ -96,6 +97,7 @@ jsfunc_for!(iiiiiii, a1 => A1, a2 => A2, a3 => A3, a4 => A4, a5 => A5, a6 => A6,
 jsfunc_for!(iiiiiiii, a1 => A1, a2 => A2, a3 => A3, a4 => A4, a5 => A5, a6 => A6, a7 => A7, a8 => A8);
 jsfunc_for!(iiiiiiiii, a1 => A1, a2 => A2, a3 => A3, a4 => A4, a5 => A5, a6 => A6, a7 => A7, a8 => A8, a9 => A9);
 jsfunc_for!(iiiiiiiiii, a1 => A1, a2 => A2, a3 => A3, a4 => A4, a5 => A5, a6 => A6, a7 => A7, a8 => A8, a9 => A9, a10 => A10);
+*/
 /*
  * TODO vi type
 jsfunc_for!(v, a1 => A1);
