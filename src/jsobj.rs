@@ -43,7 +43,7 @@ impl Drop for JSObj {
 impl JSID for JSObj {
     fn id() -> TYPEID {
         static REGISTER: Once = ONCE_INIT;
-        static OBJ_ID: &'static str = "rust_jsobj";
+        static OBJ_ID: &'static str = "rust_jsobj\0";
 
         REGISTER.call_once(|| {
             unsafe {

@@ -18,7 +18,7 @@ pub trait JSID {
 impl JSID for () {
     fn id() -> TYPEID {
         static REGISTER: Once = ONCE_INIT;
-        static VOID_ID: &'static str = "rust_void";
+        static VOID_ID: &'static str = "rust_void\0";
 
         REGISTER.call_once(|| {
             unsafe {
@@ -34,7 +34,7 @@ impl JSID for () {
 impl JSID for str {
     fn id() -> TYPEID {
         static REGISTER: Once = ONCE_INIT;
-        static STR_ID: &'static str = "rust_string_utf32";
+        static STR_ID: &'static str = "rust_string_utf32\0";
 
         REGISTER.call_once(|| {
             unsafe {
@@ -57,7 +57,7 @@ impl JSID for String {
 impl JSID for bool {
     fn id() -> TYPEID {
         static REGISTER: Once = ONCE_INIT;
-        static BOOL_ID: &'static str = "rust_bool";
+        static BOOL_ID: &'static str = "rust_bool\0";
 
         REGISTER.call_once(|| {
             unsafe {
@@ -79,7 +79,7 @@ macro_rules! register_rust_integer {
             impl JSID for $t {
                 fn id() -> TYPEID {
                     static REGISTER: Once = ONCE_INIT;
-                    static INT_ID: &'static str = concat!("rust_", stringify!($t));
+                    static INT_ID: &'static str = concat!("rust_", stringify!($t), "\0");
 
                     REGISTER.call_once(|| {
                         unsafe {
@@ -106,7 +106,7 @@ macro_rules! register_rust_real {
             impl JSID for $t {
                 fn id() -> TYPEID {
                     static REGISTER: Once = ONCE_INIT;
-                    static DOUBLE_ID: &'static str = concat!("rust_", stringify!($t));
+                    static DOUBLE_ID: &'static str = concat!("rust_", stringify!($t), "\0");
 
                     REGISTER.call_once(|| {
                         unsafe {

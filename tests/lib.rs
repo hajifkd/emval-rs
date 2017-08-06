@@ -57,6 +57,8 @@ fn get_surrogate_pair() {
 
 #[test]
 fn to_jsobj() {
-    //let func = |x| x + 1isize;
-    //Box::new(Box::new(func) as Box<Fn(isize) -> _>).to_object();
+    use std::io::Write;
+    writeln!(&mut std::io::stderr(), "aaaaaaaaaaaaaaaaaaaa").unwrap();
+    let func = |x| x + 1isize;
+    Box::new(Box::new(func) as Box<Fn(isize) -> _>).to_object();
 }

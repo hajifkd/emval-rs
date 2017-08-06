@@ -16,8 +16,9 @@ pub trait JSFunc {
 }
 
 macro_rules! count_idents {
-    ( $_h:ident ) => {0};
-    ( $_h:ident, $( $tail:ident ),*) => {1 + count_idents!($( $tail ),*)};
+    ( ) =>{ 0 };
+    ( $_h:ident ) => { 1 };
+    ( $_h:ident, $( $tail:ident ),*) => { 1 + count_idents!($( $tail ),*) };
 }
 
 static mut TEMP_ID: usize = 0;
@@ -45,12 +46,17 @@ macro_rules! jsfunc_for {
                 let helper_name = unsafe {
                     format!("{}{}", concat!("rust_helper_", stringify!($signature)), TEMP_ID)
                 };
+
+                use std::io::Write;
+                writeln!(&mut std::io::stderr(), "{}", helper_name).unwrap();
+
                 unsafe { TEMP_ID = TEMP_ID + 1; }
                 static REGISTER: Once = ONCE_INIT;
                 REGISTER.call_once(|| {
-                    let mut arglist = vec![JSObj::id(); count_idents!($( $args ),*) + 2];
+                    let mut arglist = vec![JSObj::id(); count_idents!($( $args ),*) + 3];
                     arglist[0] = RET::id();
                     arglist[1] = usize::id();
+                    arglist[count_idents!($( $args ),*) + 2] = 0isize as _;
 
                     let helper = |cptr: usize, $( $vals:$args ),*| {
                         let closure: Box<Box<Fn($( $args ),*) -> RET>> = unsafe { Box::from_raw(cptr as _) };
@@ -63,14 +69,18 @@ macro_rules! jsfunc_for {
 
                     let helper_boxed = Box::new(Box::new(helper));
 
+                    writeln!(&mut std::io::stderr(), "{}", count_idents!($( $args ),*) + 2).unwrap();
+                    writeln!(&mut std::io::stderr(), "{:?}", arglist).unwrap();
+                    writeln!(&mut std::io::stderr(), "{}", concat!(stringify!($signature), "ii\0")).unwrap();
                     unsafe {
                         _embind_register_function(format!("{}\0", helper_name).as_ptr() as _,
                                                   count_idents!($( $args ),*) + 2,
                                                   arglist.as_ptr() as _,
-                                                  concat!(stringify!($signature), '\0').as_ptr() as _,
+                                                  concat!(stringify!($signature), "ii\0").as_ptr() as _,
                                                   helper_helper::<RET, $( $args ),*> as _,
                                                   Box::into_raw(helper_boxed) as _);
                     }
+                    writeln!(&mut std::io::stderr(), "{}", stringify!($signature)).unwrap();
                 });
 
                 let self_ptr = Box::into_raw(self);
