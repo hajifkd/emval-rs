@@ -36,6 +36,18 @@ fn add() {
     test_for_types!(obj, "add", args!(1.0, 2.0), 3.0, f64 f32);
 }
 
+/*
+#[test]
+fn bind() {
+    let obj = JSObj::global("obj");
+    let r: JSObj = obj.call_prop("returnOne", args!());
+
+    use std::io::Write;
+    writeln!(&mut std::io::stderr(), "{:?}", r).unwrap();
+}
+*/
+
+
 #[test]
 fn get_string() {
     let obj = JSObj::global("obj");
@@ -59,6 +71,7 @@ fn get_surrogate_pair() {
 fn closure_pass() {
     let func = |x| x + 1isize;
     let jsclosure = Box::new(Box::new(func) as Box<Fn(isize) -> _>).to_object();
+    // なぜかここまでの間でdropが呼ばれてる？？？
     let obj = JSObj::global("obj");
 
     assert_eq!(obj.call_prop::<isize>("callClosure", args!(jsclosure, 1isize)), 2isize);

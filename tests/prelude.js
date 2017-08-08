@@ -38,6 +38,8 @@ var obj = {
   },
 
   callClosure: function(f, a) {
-    return a;
+    console.log(f);
+    console.log(a);
+    return f(a);
   }
 };

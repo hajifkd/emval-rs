@@ -35,7 +35,7 @@ pub struct JSObj {
 impl Drop for JSObj {
     fn drop(&mut self) {
         unsafe {
-            _emval_decref(self.val);
+            //_emval_decref(self.val);
         }
     }
 }
@@ -70,8 +70,7 @@ impl JSDeserialize for JSObj {
     }
 
     fn deserialize(val: EM_GENERIC_WIRE_TYPE) -> JSObj {
-        let val: *const EM_VAL = (&val as *const EM_GENERIC_WIRE_TYPE) as _;
-        unsafe { JSObj { val: *val } }
+        JSObj { val: (val as usize) as _ }
     }
 }
 
