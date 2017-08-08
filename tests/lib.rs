@@ -56,9 +56,10 @@ fn get_surrogate_pair() {
 }
 
 #[test]
-fn to_jsobj() {
-    use std::io::Write;
-    writeln!(&mut std::io::stderr(), "aaaaaaaaaaaaaaaaaaaa").unwrap();
+fn closure_pass() {
     let func = |x| x + 1isize;
-    Box::new(Box::new(func) as Box<Fn(isize) -> _>).to_object();
+    let jsclosure = Box::new(Box::new(func) as Box<Fn(isize) -> _>).to_object();
+    let obj = JSObj::global("obj");
+
+    assert_eq!(obj.call_prop::<isize>("callClosure", args!(jsclosure, 1isize)), 2isize);
 }

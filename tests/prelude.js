@@ -35,5 +35,9 @@ var obj = {
 
   add: function(x, y) {
     return x + y;
+  },
+
+  callClosure: function(f, a) {
+    return a;
   }
 };

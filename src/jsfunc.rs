@@ -47,9 +47,6 @@ macro_rules! jsfunc_for {
                     format!("{}{}", concat!("rust_helper_", stringify!($signature)), TEMP_ID)
                 };
 
-                use std::io::Write;
-                writeln!(&mut std::io::stderr(), "{}", helper_name).unwrap();
-
                 unsafe { TEMP_ID = TEMP_ID + 1; }
                 static REGISTER: Once = ONCE_INIT;
                 REGISTER.call_once(|| {
@@ -69,9 +66,6 @@ macro_rules! jsfunc_for {
 
                     let helper_boxed = Box::new(Box::new(helper));
 
-                    writeln!(&mut std::io::stderr(), "{}", count_idents!($( $args ),*) + 2).unwrap();
-                    writeln!(&mut std::io::stderr(), "{:?}", arglist).unwrap();
-                    writeln!(&mut std::io::stderr(), "{}", concat!(stringify!($signature), "ii\0")).unwrap();
                     unsafe {
                         _embind_register_function(format!("{}\0", helper_name).as_ptr() as _,
                                                   count_idents!($( $args ),*) + 2,
@@ -80,7 +74,6 @@ macro_rules! jsfunc_for {
                                                   helper_helper::<RET, $( $args ),*> as _,
                                                   Box::into_raw(helper_boxed) as _);
                     }
-                    writeln!(&mut std::io::stderr(), "{}", stringify!($signature)).unwrap();
                 });
 
                 let self_ptr = Box::into_raw(self);
