@@ -35,7 +35,7 @@ pub struct JSObj {
 impl Drop for JSObj {
     fn drop(&mut self) {
         unsafe {
-            //_emval_decref(self.val);
+            _emval_decref(self.val);
         }
     }
 }

@@ -69,9 +69,12 @@ fn get_surrogate_pair() {
 
 #[test]
 fn closure_pass() {
+    use std::io::Write;
     let func = |x| x + 1isize;
+    writeln!(&mut std::io::stderr(), "serializing closure").unwrap();
     let jsclosure = Box::new(Box::new(func) as Box<Fn(isize) -> _>).to_object();
-    // なぜかここまでの間でdropが呼ばれてる？？？
+    writeln!(&mut std::io::stderr(), "jsclosure:{:?}", jsclosure).unwrap();
+
     let obj = JSObj::global("obj");
 
     assert_eq!(obj.call_prop::<isize>("callClosure", args!(jsclosure, 1isize)), 2isize);
