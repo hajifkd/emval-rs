@@ -59,6 +59,7 @@ impl JSID for JSObj {
 impl JSSerialize for JSObj {
     fn serialize(&self) -> EM_GENERIC_WIRE_TYPE {
         unsafe {
+            _emval_incref(self.val);
             to_wire_type(transmute(self.val))
         }
     }

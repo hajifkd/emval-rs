@@ -79,10 +79,8 @@ macro_rules! jsfunc_for {
                 let self_ptr = Box::into_raw(self);
                 let module = JSObj::global("Module");
                 let helper = module.get_prop(&helper_name);
-                let args = Args::new(vec![JSObj::id(), usize::id()], vec![module.serialize(), (self_ptr as usize).serialize()]);
 
-                // Calling bind with module, module has already been freed.
-                std::mem::forget(module);
+                let args = Args::new(vec![JSObj::id(), usize::id()], vec![module.serialize(), (self_ptr as usize).serialize()]);
 
                 helper.call_prop("bind", args)
             }
