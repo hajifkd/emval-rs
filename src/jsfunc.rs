@@ -29,7 +29,9 @@ macro_rules! jsfunc_for {
             where RET: JSSerialize, $( $args: JSDeserialize ),* {
 
             fn to_object(self) -> JSObj {
-                pub extern fn helper_helper<RETP: JSSerialize, $( $args: JSDeserialize ),*>(hptr: usize, cptr: usize, $( $vals:usize ),*) -> EM_GENERIC_WIRE_TYPE {
+                // TODO here, wiretype must be returned
+                pub extern fn helper_helper<RETP: JSSerialize, $( $args: JSDeserialize ),*>(hptr: usize, cptr: usize, $( $vals:usize ),*) -> RETP::WireType {
+
                     let helper: Box<Box<Fn(usize, $( $args ),*) -> RETP>> = unsafe { Box::from_raw(hptr as _) };
                     let result = helper(cptr, $( $args::from_jsobj_id($vals as _) ),*);
 
@@ -39,7 +41,7 @@ macro_rules! jsfunc_for {
 
                     std::mem::forget(helper);
 
-                    result.serialize()
+                    result.to_wire_type()
                 }
 
                 // TODO make unique name for each realization of the templates
@@ -64,7 +66,7 @@ macro_rules! jsfunc_for {
                         result
                     };
 
-                    let helper_boxed = Box::new(Box::new(helper));
+                    let helper_boxed = Box::new(Box::new(helper) as Box<Fn(usize, $( $args ),*) -> RET>);
 
                     unsafe {
                         _embind_register_function(format!("{}\0", helper_name).as_ptr() as _,
@@ -91,6 +93,8 @@ macro_rules! jsfunc_for {
 /*
  * putStrLn $ foldr ((++) . ("\n" ++)) "" $ map (("jsfunc_for!(" ++) . (++ ");")) $ map (\x -> (replicate x 'i') ++ foldr (++) "" [", a" ++ show y ++ " => A" ++ show y | y <- [1..x]]) [1..5]
  */
+
+// TODO if the return type is f64, we need "di" instead of "ii"
 jsfunc_for!(ii, a1 => A1);
 /*
 jsfunc_for!(ii, a1 => A1, a2 => A2);

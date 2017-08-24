@@ -36,17 +36,6 @@ fn add() {
     test_for_types!(obj, "add", args!(1.0, 2.0), 3.0, f64 f32);
 }
 
-/*
-#[test]
-fn bind() {
-    let obj = JSObj::global("obj");
-    let r: JSObj = obj.call_prop("returnOne", args!());
-
-    use std::io::Write;
-    writeln!(&mut std::io::stderr(), "{:?}", r).unwrap();
-}
-*/
-
 
 #[test]
 fn get_string() {
@@ -69,11 +58,8 @@ fn get_surrogate_pair() {
 
 #[test]
 fn closure_pass() {
-    use std::io::Write;
     let func = |x| x + 1isize;
-    writeln!(&mut std::io::stderr(), "serializing closure").unwrap();
-    let jsclosure = Box::new(Box::new(func) as Box<Fn(isize) -> _>).to_object();
-    writeln!(&mut std::io::stderr(), "jsclosure:{:?}", jsclosure).unwrap();
+    let jsclosure = Box::new(Box::new(func) as Box<Fn(isize) -> isize>).to_object();
 
     let obj = JSObj::global("obj");
 
