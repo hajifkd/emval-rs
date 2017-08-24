@@ -10,9 +10,10 @@ use std::ptr;
 use self::libc::malloc;
 
 use jsid::*;
+use internalid::*;
 
 pub trait JSSerialize: JSID {
-    type WireType;
+    type WireType: InternalID;
 
     fn to_wire_type(&self) -> Self::WireType;
     fn serialize(&self) -> EM_GENERIC_WIRE_TYPE;
@@ -28,14 +29,12 @@ pub fn to_generic_wire_type(data: usize) -> EM_GENERIC_WIRE_TYPE {
 }
 
 impl JSSerialize for () {
-    type WireType = usize;
+    type WireType = ();
 
-    fn to_wire_type(&self) -> usize {
-        0usize
-    }
+    fn to_wire_type(&self) -> () {}
 
     fn serialize(&self) -> EM_GENERIC_WIRE_TYPE {
-        to_generic_wire_type(self.to_wire_type())
+        to_generic_wire_type(0usize)
     }
 }
 

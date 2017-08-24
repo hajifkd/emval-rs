@@ -49,12 +49,12 @@ fn get_wstring() {
     assert_eq!(obj.call_prop::<String>("helloWorldMulti", args!()), "こんにちは、世界!");
 }
 
-#[test]
+/*#[test]
 fn get_surrogate_pair() {
     let obj = JSObj::global("obj");
     //assert_eq!(obj.call_prop::<String>("helloSurrogatePair", args!()), "🍺");
     // This is the bug in emscripten itself!
-}
+}*/
 
 #[test]
 fn closure_pass() {

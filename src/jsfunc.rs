@@ -10,6 +10,7 @@ use jsobj::*;
 use jsserialize::*;
 use jsid::*;
 use jsdeserialize::*;
+use internalid::*;
 
 pub trait JSFunc {
     fn to_object(self) -> JSObj;
@@ -29,7 +30,6 @@ macro_rules! jsfunc_for {
             where RET: JSSerialize, $( $args: JSDeserialize ),* {
 
             fn to_object(self) -> JSObj {
-                // TODO here, wiretype must be returned
                 pub extern fn helper_helper<RETP: JSSerialize, $( $args: JSDeserialize ),*>(hptr: usize, cptr: usize, $( $vals:usize ),*) -> RETP::WireType {
 
                     let helper: Box<Box<Fn(usize, $( $args ),*) -> RETP>> = unsafe { Box::from_raw(hptr as _) };
@@ -41,12 +41,14 @@ macro_rules! jsfunc_for {
 
                     std::mem::forget(helper);
 
+                    // NOT GenericWireType, but WireType itself must be returned here.
                     result.to_wire_type()
                 }
 
+                let signature_name = format!("{}{}", RET::WireType::internal_id(), stringify!($signature));
                 // TODO make unique name for each realization of the templates
                 let helper_name = unsafe {
-                    format!("{}{}", concat!("rust_helper_", stringify!($signature)), TEMP_ID)
+                    format!("rust_helper_{}{}", signature_name, TEMP_ID)
                 };
 
                 unsafe { TEMP_ID = TEMP_ID + 1; }
@@ -72,7 +74,7 @@ macro_rules! jsfunc_for {
                         _embind_register_function(format!("{}\0", helper_name).as_ptr() as _,
                                                   count_idents!($( $args ),*) + 2,
                                                   arglist.as_ptr() as _,
-                                                  concat!(stringify!($signature), "ii\0").as_ptr() as _,
+                                                  format!("{}ii\0", signature_name).as_ptr() as _,
                                                   helper_helper::<RET, $( $args ),*> as _,
                                                   Box::into_raw(helper_boxed) as _);
                     }
@@ -94,8 +96,7 @@ macro_rules! jsfunc_for {
  * putStrLn $ foldr ((++) . ("\n" ++)) "" $ map (("jsfunc_for!(" ++) . (++ ");")) $ map (\x -> (replicate x 'i') ++ foldr (++) "" [", a" ++ show y ++ " => A" ++ show y | y <- [1..x]]) [1..5]
  */
 
-// TODO if the return type is f64, we need "di" instead of "ii"
-jsfunc_for!(ii, a1 => A1);
+jsfunc_for!(i, a1 => A1);
 /*
 jsfunc_for!(ii, a1 => A1, a2 => A2);
 jsfunc_for!(iii, a1 => A1, a2 => A2, a3 => A3);
@@ -106,17 +107,4 @@ jsfunc_for!(iiiiiii, a1 => A1, a2 => A2, a3 => A3, a4 => A4, a5 => A5, a6 => A6,
 jsfunc_for!(iiiiiiii, a1 => A1, a2 => A2, a3 => A3, a4 => A4, a5 => A5, a6 => A6, a7 => A7, a8 => A8);
 jsfunc_for!(iiiiiiiii, a1 => A1, a2 => A2, a3 => A3, a4 => A4, a5 => A5, a6 => A6, a7 => A7, a8 => A8, a9 => A9);
 jsfunc_for!(iiiiiiiiii, a1 => A1, a2 => A2, a3 => A3, a4 => A4, a5 => A5, a6 => A6, a7 => A7, a8 => A8, a9 => A9, a10 => A10);
-*/
-/*
- * TODO vi type
-jsfunc_for!(v, a1 => A1);
-jsfunc_for!(vi, a1 => A1, a2 => A2);
-jsfunc_for!(vii, a1 => A1, a2 => A2, a3 => A3);
-jsfunc_for!(viii, a1 => A1, a2 => A2, a3 => A3, a4 => A4);
-jsfunc_for!(viiii, a1 => A1, a2 => A2, a3 => A3, a4 => A4, a5 => A5);
-jsfunc_for!(viiiii, a1 => A1, a2 => A2, a3 => A3, a4 => A4, a5 => A5, a6 => A6);
-jsfunc_for!(viiiiii, a1 => A1, a2 => A2, a3 => A3, a4 => A4, a5 => A5, a6 => A6, a7 => A7);
-jsfunc_for!(viiiiiii, a1 => A1, a2 => A2, a3 => A3, a4 => A4, a5 => A5, a6 => A6, a7 => A7, a8 => A8);
-jsfunc_for!(viiiiiiii, a1 => A1, a2 => A2, a3 => A3, a4 => A4, a5 => A5, a6 => A6, a7 => A7, a8 => A8, a9 => A9);
-jsfunc_for!(viiiiiiiii, a1 => A1, a2 => A2, a3 => A3, a4 => A4, a5 => A5, a6 => A6, a7 => A7, a8 => A8, a9 => A9, a10 => A10);
 */
